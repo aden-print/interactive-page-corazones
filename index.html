@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Te Amo Matrix</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: black;
+      font-family: 'Arial Black', sans-serif;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+
+    canvas {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .fancy-button {
+      margin-top: 10px;
+      font-size: 18px;
+      padding: 10px 20px;
+      background: linear-gradient(45deg, #ff9ebf, #ff69b4, #ffa3c4);
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      animation: pulse 2s infinite;
+      transition: transform 0.3s;
+    }
+
+    .fancy-button:hover {
+      transform: scale(1.05);
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(255, 105, 180, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); }
+    }
+
+    .text-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .text-controls input[type="text"],
+    .text-controls input[type="color"] {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 10px;
+    }
+
+    .text-controls button {
+      background-color: #ff69b4;
+      color: white;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 5px;
+      transition: background 0.3s;
+    }
+
+    .text-controls button:hover {
+      background-color: #ff85c1;
+    }
+
+    .heart {
+      position: absolute;
+      color: #ff69b4;
+      animation: float 4s ease-in-out forwards;
+      font-size: 18px;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-200px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="intro" class="overlay">
+    ¿Estás listo para algo especial?
+    <button id="startBtn" class="fancy-button">💖 Iniciar 💖</button>
+  </div>
+
+  <div id="messageOverlay" class="overlay" style="display:none">
+    Todo esto fue para decirte…<br>
+    ¡Que Te Amo más que a nada 💖!<br>
+    <button id="backButton" class="fancy-button">💫 Regresar 💫</button>
+  </div>
+
+  <div id="finalOverlay" class="overlay" style="display:none">
+    Gracias por ser parte de este momento 💝<br>
+    ¡Eres muy especial! 🌟<br>
+    <button id="restartBtn" class="fancy-button">🔁 Volver a Empezar</button>
+  </div>
+
+  <div class="text-controls">
+    <input type="text" id="textInput" placeholder="Texto a mostrar" />
+    <input type="color" id="colorPicker" value="#ff69b4" />
+    <button id="endBtn">Finalizar</button>
+  </div>
+
+  <audio id="bg-music" src="musiquita.mp3" loop hidden></audio>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let fontSize = 22;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array.from({ length: columns }, () => Math.random() * -20);
+    let rainText = "Te Amo";
+    let animationFrame;
+    let explosions = [];
+    const music = document.getElementById("bg-music");
+    let currentColor = document.getElementById("colorPicker").value;
+
+    const textInput = document.getElementById("textInput");
+    const colorPicker = document.getElementById("colorPicker");
+
+    textInput.addEventListener("input", () => {
+      rainText = textInput.value || "Te Amo";
+    });
+
+    colorPicker.addEventListener("input", (e) => {
+      currentColor = e.target.value;
+    });
+
+    document.getElementById("endBtn").addEventListener("click", () => {
+      cancelAnimationFrame(animationFrame);
+      document.getElementById("finalOverlay").style.display = "flex";
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      document.getElementById("finalOverlay").style.display = "none";
+      document.getElementById("intro").style.display = "flex";
+      drops = Array.from({ length: columns }, () => Math.random() * -20);
+    });
+
+    function drawMatrixRain() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px Arial Black`;
+      ctx.fillStyle = currentColor;
+      for (let i = 0; i < drops.length; i++) {
+        ctx.fillText(rainText, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        } else {
+          drops[i]++;
+        }
+      }
+    }
+
+    function createHeartExplosion(x, y) {
+      const particles = [];
+      const heartPoints = 100;
+      for (let i = 0; i < heartPoints; i++) {
+        const t = (i / heartPoints) * Math.PI * 2;
+        const xOffset = 16 * Math.pow(Math.sin(t), 3);
+        const yOffset = - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+        const vx = xOffset * 0.4 + (Math.random() - 0.5);
+        const vy = yOffset * 0.4 + (Math.random() - 0.5);
+
+        particles.push({
+          x,
+          y,
+          vx,
+          vy,
+          alpha: 1,
+          size: 3 + Math.random() * 2,
+          color: `hsl(${Math.random() * 360}, 100%, 70%)`
+        });
+      }
+      explosions.push({ particles, time: 0 });
+    }
+
+    function drawExplosions() {
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        const explosion = explosions[i];
+        explosion.particles.forEach(p => {
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${Math.random() * 360}, 100%, 70%, ${p.alpha})`;
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= 0.01;
+        });
+
+        ctx.font = "bold 28px Arial";
+        ctx.fillStyle = `rgba(255, 255, 255, ${1 - explosion.time / 100})`;
+        ctx.fillText(rainText, explosion.particles[0].x - (rainText.length * 7), explosion.particles[0].y - 50);
+
+        explosion.time++;
+        if (explosion.time > 100) explosions.splice(i, 1);
+      }
+    }
+
+    function createFloatingHearts() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.top = "100%";
+      heart.textContent = "❤️";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 4000);
+    }
+
+    function animate() {
+      drawMatrixRain();
+      drawExplosions();
+      createFloatingHearts();
+      animationFrame = requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("click", e => {
+      createHeartExplosion(e.clientX, e.clientY);
+    });
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      document.getElementById("intro").style.display = "none";
+      music.play().catch(() => {});
+      drops = Array.from({ length: columns }, () => Math.random() * -20);
+      animate();
+    });
+
+    document.getElementById("backButton").addEventListener("click", () => {
+      document.getElementById("messageOverlay").style.display = "none";
+      animate();
+    });
+
+    document.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      createHeartExplosion(e.clientX, e.clientY);
+      document.getElementById("messageOverlay").style.display = "flex";
+    });
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.random() * -20);
+    });
+  </script>
+</body>
+</html>
