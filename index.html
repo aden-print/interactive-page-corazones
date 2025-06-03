@@ -84,28 +84,35 @@
       right: 20px;
       z-index: 1000;
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
     }
 
-    .text-controls input[type="text"],
-    .text-controls input[type="color"] {
-      padding: 8px;
-      font-size: 16px;
+    .text-controls input[type="text"] {
+      width: 120px;
+      padding: 6px;
+      font-size: 14px;
       border-radius: 8px;
       border: none;
-      margin-bottom: 10px;
+    }
+
+    .text-controls input[type="color"] {
+      width: 80px;
+      padding: 6px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
     }
 
     .text-controls button {
+      padding: 6px 12px;
       background-color: #ff69b4;
       color: white;
-      padding: 6px 10px;
       border: none;
-      border-radius: 20px;
-      font-size: 14px;
+      border-radius: 16px;
+      font-size: 12px;
       cursor: pointer;
-      margin-top: 5px;
       transition: background 0.3s;
     }
 
@@ -125,6 +132,21 @@
     @keyframes float {
       0% { transform: translateY(0); opacity: 1; }
       100% { transform: translateY(-200px); opacity: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .text-controls {
+        top: 10px;
+        right: 10px;
+        gap: 6px;
+      }
+      .text-controls input[type="text"],
+      .text-controls input[type="color"],
+      .text-controls button {
+        font-size: 12px;
+        padding: 5px 8px;
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -150,6 +172,7 @@
     <input type="text" id="textInput" placeholder="Texto a mostrar" />
     <input type="color" id="colorPicker" value="#ff69b4" />
     <button id="endBtn">Finalizar</button>
+    <button id="goPuzzleBtn">Rompecabezas</button>
   </div>
 
   <audio id="bg-music" src="musiquita.mp3" loop hidden></audio>
@@ -190,6 +213,11 @@
       document.getElementById("finalOverlay").style.display = "none";
       document.getElementById("intro").style.display = "flex";
       drops = Array.from({ length: columns }, () => Math.random() * -20);
+    });
+
+    document.getElementById("goPuzzleBtn").addEventListener("click", () => {
+      // Redirige al rompecabezas con la ruta exacta solicitada
+      window.location.href = "/rompecabezas/rompecabezas.html";
     });
 
     function drawMatrixRain() {
